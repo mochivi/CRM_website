@@ -2,4 +2,32 @@
 
 {% block content %}
 
+<div class='col-md-6 offset-md-3'>
+  {% if user.is_authenticated %}
+    <h1 class="display-6 mb-3">You're already logged in</h1>
+  {% else %}
+
+    <h1 class="display-6 mb-3">Register</h1>
+    <form method="POST", action="{% url 'register' %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="alert alert-warning alert-dismissable fade show" role="alert">
+          Your submission has errors
+          {% for field in form %}
+            {% if field.errors %}
+              {{ field.errors}}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <br>
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+
+  {% endif %}
+</div>
+
 {% endblock %}

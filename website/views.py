@@ -1,14 +1,22 @@
 from django.shortcuts import render, redirect
 from django.views import View
+from django.views.generic import DetailView
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from .forms import SignUpForm
+from .models import Record
 
 # Class based views
 class Home(View):
-    def get(self, request):
-        return render(request, 'website/home.html', {})
 
-# Function based views (simpler pages)
+    def get(self, request):
+        records = Record.objects.all()
+        return render(request, 'website/home.html', {'records': records})
+
+class RecordDetail(DetailView):
+    pass
+
+# Function based views
 
 def login_user(request):
     if request.method == 'POST':
@@ -35,7 +43,19 @@ def logout_user(request):
     return redirect('home')
 
 def register_user(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            
+            # Authenticate and login
+            user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
+            login(request, user)
+            messages.success(request, "You have registered!")
+            
+            return redirect('home')
+    else:
+        form = SignUpForm()
     
+    return render(request, 'website/register.html', {'form': form})
 
-
-    return render(request, 'website/register.html', {})
