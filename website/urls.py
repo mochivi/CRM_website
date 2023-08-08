@@ -10,4 +10,5 @@ urlpatterns = [
     path("record/detail/<int:pk>", views.RecordDetail.as_view(), name='record'),
     path("record/delete/<int:pk>", views.delete_record, name='delete_record'),
     path("record/add", views.AddRecord.as_view(), name='add_record'),
+    path("record/update/<int:pk>", views.UpdateRecord.as_view(), name='update_record'),
 ]

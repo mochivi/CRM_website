@@ -43,6 +43,22 @@ class AddRecord(LoginRequiredMixin, View):
             messages.success(request, f'Record "{add_record}" added')
             return redirect("home")
 
+class UpdateRecord(LoginRequiredMixin, View):
+
+    def get(self, request, pk):
+        current_record = Record.objects.get(pk=pk)
+        form = AddRecordForm(instance=current_record)
+
+        return render(request, 'website/update_record.html', {'form': form, 'id': current_record.id})
+
+    def post(self, request, pk):
+        current_record = Record.objects.get(pk=pk)
+        form = AddRecordForm(request.POST, instance=current_record)
+        if form.is_valid():
+            add_record = form.save()
+            messages.success(request, f'Request "{add_record}" updated')
+        return redirect('home')
+
 # Function based views
 
 @login_required(redirect_field_name="login")

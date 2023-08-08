@@ -8,7 +8,12 @@
     </div>
     
     <div class="card-body">
-      <h5 class="card-title">Contact details</h5>
+      <div class="d-flex justify-content-between">
+        <h5 class="card-title">Contact details</h5>
+        <div class="text-end">
+          <a href="{% url 'delete_record' pk=record.id %}" class="btn btn-danger">Delete</a>
+        </div>
+      </div>
       <hr>
       <p class="card-text mb-1 mt-1"><strong>Address: </strong>{{ record.adress }}</p>
       <p class="card-text mb-1 mt-1"><strong>Country: </strong>{{ record.country }}</p>
@@ -16,15 +21,22 @@
       <p class="card-text mb-1 mt-1"><strong>City: </strong>{{ record.city }}</p>
       <p class="card-text mb-1 mt-1"><strong>Email: </strong>{{ record.email }}</p>
       <p class="card-text mb-1 mt-1"><strong>Phone: </strong>{{ record.phone }}</p>
-      
-      <p class="card-text mb-0 mt-3"><small>Created {{ record.created_at }}</small></p>
-      <p class="card-text mb-1 mt-0"><small>Modified {{ record.modified_last }}</small> </p>
-      
+    </div>
 
-      
+    <div class="card-footer mb-0 mt-0">
+      <div class="d-flex justify-content-between">
+        <div class="align-items-center">
+          <a href="{% url 'update_record' pk=record.id %}" class="btn btn-secondary align-self-start mt-1">Update</a>
+        </div>
+        
+        <div class="text-end">
+          <p class="card-text mb-0"><small>Created {{ record.created_at }}</small></p>
+          <p class="card-text mt-0"><small>Modified {{ record.modified_last }}</small> </p>
+        </div>
+      </div>
     </div>
   </div>
 
   <a href="{% url 'home' %}" class="btn btn-dark mt-1">Back</a>
-  <a href="{% url 'delete_record' pk=record.id %}" class="btn btn-danger mt-1">Delete</a>
+  
 {% endblock %}

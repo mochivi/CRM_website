@@ -122,4 +122,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Redirect users not logged in to the login page when trying to access unauthorized pages
 LOGIN_URL = 'login'
