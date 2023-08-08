@@ -12,11 +12,11 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.db.models import QuerySet, Model
 
-from .forms import SignUpForm
+from .forms import SignUpForm, AddRecordForm
 from .models import Record
 
 # Class based views
-class Home(View):
+class Home(LoginRequiredMixin, View):
 
     def get(self, request):
         records = Record.objects.all()
@@ -29,6 +29,19 @@ class RecordDetail(LoginRequiredMixin, DetailView):
     def get_object(self, queryset: QuerySet[Any] | None = ...) -> Model:
         pk = self.kwargs['pk']
         return Record.objects.get(pk=pk)
+    
+class AddRecord(LoginRequiredMixin, View):
+
+    def get(self, request):
+        form = AddRecordForm()
+        return render(request, 'website/add_record.html', {'form': form})
+
+    def post(self, request):
+        form = AddRecordForm(request.POST)
+        if form.is_valid():
+            add_record = form.save()
+            messages.success(request, f'Record "{add_record}" added')
+            return redirect("home")
 
 # Function based views
 
@@ -38,7 +51,6 @@ def delete_record(request, pk):
     delete_it.delete()
     messages.success(request, f"Record for {delete_it} deleted succesfully")
     return redirect("home")
-
 
 def login_user(request):
     if request.method == 'POST':
