@@ -1,8 +1,17 @@
+from typing import Any, Dict, Optional
+from django.db import models
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import DetailView
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
 from django.contrib import messages
+from django.http import Http404
+from django.shortcuts import get_object_or_404
+from django.db.models import QuerySet, Model
+
 from .forms import SignUpForm
 from .models import Record
 
@@ -13,10 +22,23 @@ class Home(View):
         records = Record.objects.all()
         return render(request, 'website/home.html', {'records': records})
 
-class RecordDetail(DetailView):
-    pass
+class RecordDetail(LoginRequiredMixin, DetailView):
+    model = Record
+    template_name = 'website/record_detail.html'
+    
+    def get_object(self, queryset: QuerySet[Any] | None = ...) -> Model:
+        pk = self.kwargs['pk']
+        return Record.objects.get(pk=pk)
 
 # Function based views
+
+@login_required(redirect_field_name="login")
+def delete_record(request, pk):
+    delete_it = Record.objects.get(pk=pk)
+    delete_it.delete()
+    messages.success(request, f"Record for {delete_it} deleted succesfully")
+    return redirect("home")
+
 
 def login_user(request):
     if request.method == 'POST':

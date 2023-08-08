@@ -27,7 +27,7 @@
             <td> {{ record.country }}</td>
             <td> {{ record.city }}</td>
             <td> {{ record.created_at }}</td>
-            <td><a href="#">{{ record.id }}</a></td>
+            <td><a href="{% url 'record' pk=record.id %}">{{ record.id }}</a></td>
             <td><a class="btn-secondary" href="#">Edit</a></td>
           </tr>
           {% endfor %}
