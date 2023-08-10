@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional
 from django.db import models
+from django.db.models.query import QuerySet
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView
@@ -14,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import QuerySet, Model
 
 from .forms import SignUpForm, AddRecordForm, AddGroupForm
-from .models import Record
+from .models import Record, UserGroup
 
 # Class based views
 class Home(LoginRequiredMixin, View):
@@ -73,8 +74,16 @@ class CreateUserGroup(LoginRequiredMixin, View):
             messages.error(request, "There was an error creating the group")
             return redirect("create_group")
         
-class UserGroupList(ListView):
-    pass
+class UserGroupLists(ListView):
+    model = UserGroup
+    template_name = 'website/usergroup_list.html'
+    context_object_name = 'groups'
+    paginate_by = 5
+
+    def get_queryset(self) -> QuerySet[Any]:
+        queryset = UserGroup.objects.prefetch_related('admin')
+        return queryset
+
 
 # Function based views
 

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>User Groups</h1>
+  <hr>
+  <div class="container">
+    <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Members</th>
+        <th>Admin</th>
+        <th>Visibility</th>
+      </tr>
+    </thead>
+      <tbody>
+        {% for group in groups %}
+        <tr>
+          <td>{{ group.name }}</td>
+          <td>{{ group.description }}</td>
+          <td>
+            {% for member in group.members.all %}
+              {{ member.username }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ group.admin.username }}</td>
+          <td>{{ group.visibility }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

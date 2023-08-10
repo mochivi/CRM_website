@@ -130,9 +130,24 @@ class AddRecordForm(forms.ModelForm):
         label = ""
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = kwargs.pop("user", None)
+
+    def save(self, commit=True):
+        record = super().save(commit=False)
+
+        if self.user is not None:
+            record.creator = self.user
+
+            if commit:
+                record.save()
+        
+        return record
+
     class Meta:
         model = Record
-        exclude = ("user",)
+        exclude = ("creator",)
 
 class AddGroupForm(forms.ModelForm):
     name = forms.CharField(
@@ -153,30 +168,30 @@ class AddGroupForm(forms.ModelForm):
             }),
         label = "Description"
     )
-    members = forms.CharField(
-        required=False,
-        widget = forms.SelectMultiple(attrs={
-            'class': 'form-control',
-            'multiple': 'multiple'
-            }),
-        label="Members"
-    )
-    records = forms.CharField(
-        required=False,
-        widget = forms.SelectMultiple(attrs={
-            'class': 'form-control',
-            'multiple': 'multiple'
-            }),
-        label="Records"
-    )
-    admin = forms.CharField(
-        required=False,
-        widget = forms.SelectMultiple(attrs={
-            'class': 'form-control',
-            'multiple': 'multiple'
-            }),
-        label="Admin"
-    )
+    # members = forms.CharField(
+    #     required=False,
+    #     widget = forms.SelectMultiple(attrs={
+    #         'class': 'form-control',
+    #         'multiple': 'multiple'
+    #         }),
+    #     label="Members"
+    # )
+    # records = forms.CharField(
+    #     required=False,
+    #     widget = forms.SelectMultiple(attrs={
+    #         'class': 'form-control',
+    #         'multiple': 'multiple'
+    #         }),
+    #     label="Records"
+    # )
+    # admin = forms.CharField(
+    #     required=False,
+    #     widget = forms.SelectMultiple(attrs={
+    #         'class': 'form-control',
+    #         'multiple': 'multiple'
+    #         }),
+    #     label="Admin"
+    # )
     visibility = forms.ChoiceField(
         required=True,
         choices=['Public', 'Private'],
@@ -185,19 +200,13 @@ class AddGroupForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs): #curent_user to arguments maybe
         self.user = kwargs.pop("user", None)
-        
         super().__init__(*args, **kwargs)
-        
         self.fields['visibility'].choices = self.Meta.model.VISIBILITY_CHOICES
-        
-        self.fields['members'].queryset = User.objects.all()
-        self.fields['admin'].queryset = User.objects.all()
         
         if self.user is not None:
             self.fields['records'].queryset = Record.objects.filter(creator=self.user)
-        
-        # self.instance.admin = current_user
-        # self.instance.members.set([current_user])
+            self.fields['members'].queryset = User.objects.all()
+            self.fields['admin'].queryset = User.objects.all()
     
     def save(self, commit=True):
         user_group = super().save(commit=False)
@@ -229,7 +238,6 @@ class AddGroupForm(forms.ModelForm):
         cd["admin"] = admin
         
         return cd
-
 
     class Meta:
         model = UserGroup
