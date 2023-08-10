@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
-from .models import Record
+from .models import Record, UserGroup
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(
@@ -133,3 +133,104 @@ class AddRecordForm(forms.ModelForm):
     class Meta:
         model = Record
         exclude = ("user",)
+
+class AddGroupForm(forms.ModelForm):
+    name = forms.CharField(
+        required=True, 
+        widget=forms.widgets.TextInput(attrs={
+            "placeholder": "Group Name",
+            "class": "form-control",
+            "max_length": "50"
+            }),
+        label = "Name"
+    )
+    description = forms.CharField(
+        required=True, 
+        widget=forms.widgets.Textarea(attrs={
+            "placeholder": "Description",
+            "class": "form-control",
+            "max_length": "255"
+            }),
+        label = "Description"
+    )
+    members = forms.CharField(
+        required=False,
+        widget = forms.SelectMultiple(attrs={
+            'class': 'form-control',
+            'multiple': 'multiple'
+            }),
+        label="Members"
+    )
+    records = forms.CharField(
+        required=False,
+        widget = forms.SelectMultiple(attrs={
+            'class': 'form-control',
+            'multiple': 'multiple'
+            }),
+        label="Records"
+    )
+    admin = forms.CharField(
+        required=False,
+        widget = forms.SelectMultiple(attrs={
+            'class': 'form-control',
+            'multiple': 'multiple'
+            }),
+        label="Admin"
+    )
+    visibility = forms.ChoiceField(
+        required=True,
+        choices=['Public', 'Private'],
+        label="Visibility"
+    )
+
+    def __init__(self, *args, **kwargs): #curent_user to arguments maybe
+        self.user = kwargs.pop("user", None)
+        
+        super().__init__(*args, **kwargs)
+        
+        self.fields['visibility'].choices = self.Meta.model.VISIBILITY_CHOICES
+        
+        self.fields['members'].queryset = User.objects.all()
+        self.fields['admin'].queryset = User.objects.all()
+        
+        if self.user is not None:
+            self.fields['records'].queryset = Record.objects.filter(creator=self.user)
+        
+        # self.instance.admin = current_user
+        # self.instance.members.set([current_user])
+    
+    def save(self, commit=True):
+        user_group = super().save(commit=False)
+
+        if self.user:
+            if not user_group.admin:
+                user_group.admin = self.user
+
+            if commit:
+                user_group.save()
+            
+            if not user_group.members.exists():
+                user_group.members.set([self.user])
+        
+        return user_group
+
+    def clean(self):
+        cd = super().clean()
+
+        members = cd.get("members")
+        admin = cd.get("admin")
+
+        if not members:
+            members = [self.user]
+        if not admin:
+            admin = self.user
+
+        cd["members"] = members
+        cd["admin"] = admin
+        
+        return cd
+
+
+    class Meta:
+        model = UserGroup
+        fields = '__all__'

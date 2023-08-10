@@ -2,24 +2,24 @@ from typing import Any, Dict, Optional
 from django.db import models
 from django.shortcuts import render, redirect
 from django.views import View
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.db.models import QuerySet, Model
 
-from .forms import SignUpForm, AddRecordForm
+from .forms import SignUpForm, AddRecordForm, AddGroupForm
 from .models import Record
 
 # Class based views
 class Home(LoginRequiredMixin, View):
-
     def get(self, request):
-        records = Record.objects.all()
+        records = Record.objects.filter()
         return render(request, 'website/home.html', {'records': records})
 
 class RecordDetail(LoginRequiredMixin, DetailView):
@@ -31,7 +31,6 @@ class RecordDetail(LoginRequiredMixin, DetailView):
         return Record.objects.get(pk=pk)
     
 class AddRecord(LoginRequiredMixin, View):
-
     def get(self, request):
         form = AddRecordForm()
         return render(request, 'website/add_record.html', {'form': form})
@@ -44,7 +43,6 @@ class AddRecord(LoginRequiredMixin, View):
             return redirect("home")
 
 class UpdateRecord(LoginRequiredMixin, View):
-
     def get(self, request, pk):
         current_record = Record.objects.get(pk=pk)
         form = AddRecordForm(instance=current_record)
@@ -59,7 +57,41 @@ class UpdateRecord(LoginRequiredMixin, View):
             messages.success(request, f'Request "{add_record}" updated')
         return redirect('home')
 
+class CreateUserGroup(LoginRequiredMixin, View):
+    def get(self, request):
+        form = AddGroupForm(user=request.user)
+        return render(request, 'website/create_group.html', {"form": form})
+
+    def post(self, request):
+        form = AddGroupForm(request.POST, user=request.user)
+        if form.is_valid():
+            user_group = form.save()
+
+            messages.success(request, f"Group {user_group} created")
+            return redirect('home')
+        else:
+            messages.error(request, "There was an error creating the group")
+            return redirect("create_group")
+        
+class UserGroupList(ListView):
+    pass
+
 # Function based views
+
+def delete_user_group():
+    pass
+
+def add_user_to_group():
+    pass
+
+def remove_user_from_group():
+    pass
+
+def add_record_to_group():
+    pass
+
+def remove_record_from_group():
+    pass
 
 @login_required(redirect_field_name="login")
 def delete_record(request, pk):
