@@ -2,6 +2,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
 from .models import Record, UserGroup
+from django.db.models import QuerySet
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(
@@ -136,13 +137,10 @@ class AddRecordForm(forms.ModelForm):
 
     def save(self, commit=True):
         record = super().save(commit=False)
-
         if self.user is not None:
             record.creator = self.user
-
             if commit:
                 record.save()
-        
         return record
 
     class Meta:
@@ -168,37 +166,46 @@ class AddGroupForm(forms.ModelForm):
             }),
         label = "Description"
     )
-    # members = forms.CharField(
-    #     required=False,
-    #     widget = forms.SelectMultiple(attrs={
-    #         'class': 'form-control',
-    #         'multiple': 'multiple'
-    #         }),
-    #     label="Members"
-    # )
-    # records = forms.CharField(
-    #     required=False,
-    #     widget = forms.SelectMultiple(attrs={
-    #         'class': 'form-control',
-    #         'multiple': 'multiple'
-    #         }),
-    #     label="Records"
-    # )
-    # admin = forms.CharField(
-    #     required=False,
-    #     widget = forms.SelectMultiple(attrs={
-    #         'class': 'form-control',
-    #         'multiple': 'multiple'
-    #         }),
-    #     label="Admin"
-    # )
+    members = forms.ModelMultipleChoiceField(
+        required=False,
+        widget = forms.SelectMultiple(
+            attrs={
+                'class': 'form-control',
+                'multiple': 'multiple'
+            },
+        ),
+        queryset = None, # Better to customize in the __init__ function for organization
+        label="Members",
+    )
+    records = forms.ModelMultipleChoiceField(
+        required=False,
+        widget = forms.SelectMultiple(
+            attrs={
+                'class': 'form-control',
+                'multiple': 'multiple'
+            },
+        ),
+        queryset = None, # Should be none as we filter by the user created records later
+        label="Records",
+    )
+    admin = forms.ModelChoiceField(
+        required=False,
+        widget = forms.Select(
+            attrs={
+                'class': 'form-control',
+                'multiple': 'multiple'
+            }, 
+        ),
+        queryset = None, # Better to customize in the __init__ function for organization
+        label="Admin",
+    )
     visibility = forms.ChoiceField(
         required=True,
         choices=['Public', 'Private'],
         label="Visibility"
     )
 
-    def __init__(self, *args, **kwargs): #curent_user to arguments maybe
+    def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.fields['visibility'].choices = self.Meta.model.VISIBILITY_CHOICES
@@ -213,16 +220,17 @@ class AddGroupForm(forms.ModelForm):
 
         if self.user:
             if not user_group.admin:
-                user_group.admin = self.user
-
+                if isinstance(self.user, QuerySet):
+                    user_group.admin = self.user[0]
+                else:
+                    user_group.admin = self.user
             if commit:
                 user_group.save()
-            
             if not user_group.members.exists():
                 user_group.members.set([self.user])
-        
         return user_group
 
+    # There's definitely a more elegant way to do this but it works
     def clean(self):
         cd = super().clean()
 

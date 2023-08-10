@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.db.models import QuerySet, Model
+from django.db.models import QuerySet, Model, Q
 
 from .forms import SignUpForm, AddRecordForm, AddGroupForm
 from .models import Record, UserGroup
@@ -37,7 +37,7 @@ class AddRecord(LoginRequiredMixin, View):
         return render(request, 'website/add_record.html', {'form': form})
 
     def post(self, request):
-        form = AddRecordForm(request.POST)
+        form = AddRecordForm(request.POST, user=request.user)
         if form.is_valid():
             add_record = form.save()
             messages.success(request, f'Record "{add_record}" added')
@@ -78,10 +78,15 @@ class UserGroupLists(ListView):
     model = UserGroup
     template_name = 'website/usergroup_list.html'
     context_object_name = 'groups'
-    paginate_by = 5
+    paginate_by = 25
 
     def get_queryset(self) -> QuerySet[Any]:
         queryset = UserGroup.objects.prefetch_related('admin')
+        
+        # Filter by public groups or groups you're in
+        user = self.request.user
+        queryset = queryset.filter(Q(visibility='public') | (Q(admin=user) | Q(members=user)))
+
         return queryset
 
 
