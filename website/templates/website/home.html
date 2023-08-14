@@ -12,6 +12,7 @@
             <th scope="col">Phone</th>
             <th scope="col">Country</th>
             <th scope="col">City</th>
+            <th scope="col">Group</th>
             <th scope="col">Created At</th>
             <th scope="col">ID</th>
             <th scope="col">Edit</th>
@@ -24,6 +25,11 @@
             <td> {{ record.phone }}</td>
             <td> {{ record.country }}</td>
             <td> {{ record.city }}</td>
+            <td> 
+              {% for group in record.user_groups.all %} 
+                {{ group.name }},
+              {% endfor %}
+            </td>
             <td> {{ record.created_at }}</td>
             <td><a href="{% url 'record' pk=record.id %}">{{ record.id }}</a></td>
             <td><a class="btn-secondary" href="{% url 'update_record' pk=record.id %}">Edit</a></td>

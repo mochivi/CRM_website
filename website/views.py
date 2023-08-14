@@ -20,7 +20,11 @@ from .models import Record, UserGroup
 # Class based views
 class Home(LoginRequiredMixin, View):
     def get(self, request):
-        records = Record.objects.filter()
+        user_groups = request.user.user_groups.all()
+        user_records = Record.objects.filter(creator=request.user)
+        group_records = Record.objects.filter(group_records__in=user_groups)
+
+        records = group_records | user_records
         return render(request, 'website/home.html', {'records': records})
 
 class RecordDetail(LoginRequiredMixin, DetailView):
@@ -89,6 +93,15 @@ class UserGroupLists(ListView):
 
         return queryset
 
+# Adicionar botão para acessar o grupo e editar, checar permissão de admin para poder editar
+# Qualquer um pode adicionar pessoas no grupo.
+class UserGroupDetail(DetailView):
+    model = UserGroup
+    template_name = 'website/usergroup_detail.html'
+    
+    def get_object(self, queryset: QuerySet[Any] | None = ...) -> Model:
+        pk = self.kwargs['pk']
+        return UserGroup.objects.get(pk=pk)
 
 # Function based views
 
