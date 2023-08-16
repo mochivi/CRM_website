@@ -102,11 +102,32 @@ class UserGroupDetail(DetailView):
     def get_object(self, queryset: QuerySet[Any] | None = ...) -> Model:
         pk = self.kwargs['pk']
         return UserGroup.objects.get(pk=pk)
+    
+class UpdateUserGroup(View):
+    
+    def get(self, request, pk):
+        current_group = UserGroup.objects.get(pk=pk)
+        form = AddGroupForm(instance=current_group)
+
+        return render(request, 'website/update_usergroup.html', {'form': form, 'id': current_group.id})
+    
+    def post(self, request, pk):
+
+        current_group = UserGroup.objects.get(pk=pk)
+        form = AddGroupForm(request.POST, instance=current_group)
+
+        if form.is_valid():
+            add_group = form.save()
+            messages.success(request, f'Group "{add_group}" updated')
+        return redirect('home')
 
 # Function based views
 
-def delete_user_group():
-    pass
+def delete_user_group(request, pk):
+    user_group = UserGroup.objects.get(pk=pk)
+    user_group.delete()
+    messages.success(request, f"Group {user_group} deleted!")
+    return redirect('home')
 
 def add_user_to_group():
     pass

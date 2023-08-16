@@ -13,6 +13,7 @@ urlpatterns = [
     path("record/update/<int:pk>", views.UpdateRecord.as_view(), name='update_record'),
     path("groups/add", views.CreateUserGroup.as_view(), name='create_group'),
     path("groups/view", views.UserGroupLists.as_view(), name='view_groups'),
-    #path("groups/detail", views..as_view(), name='detail_group'),
-    #path("groups/delete", views..as_view(), name='delete_group'),
+    path("groups/detail/<int:pk>", views.UserGroupDetail.as_view(), name='detail_group'),
+    path("groups/delete/<int:pk>", views.delete_user_group, name='delete_group'),
+    path("groups/update/<int:pk>", views.UpdateUserGroup.as_view(), name='update_group')
 ]

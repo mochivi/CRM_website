@@ -4,34 +4,42 @@
 
   <div class="card">
     <div class="card-header">
-      {{ usergroup.last_name }}, {{ usergroup.first_name }}
+      {{ usergroup.name }}
     </div>
     
     <div class="card-body">
       <div class="d-flex justify-content-between">
-        <h5 class="card-title">Contact details</h5>
+        <h5 class="card-title">Details</h5>
         <div class="text-end">
-          <a href="{% url 'delete_record' pk=record.id %}" class="btn btn-danger">Delete</a>
+          <a href="{% url 'delete_group' pk=usergroup.id %}" class="btn btn-danger">Delete</a>
         </div>
       </div>
       <hr>
-      <p class="card-text mb-1 mt-1"><strong>Address: </strong>{{ usergroup.adress }}</p>
-      <p class="card-text mb-1 mt-1"><strong>Country: </strong>{{ usergroup.country }}</p>
-      <p class="card-text mb-1 mt-1"><strong>State: </strong>{{ usergroup.state }}</p>
-      <p class="card-text mb-1 mt-1"><strong>City: </strong>{{ usergroup.city }}</p>
-      <p class="card-text mb-1 mt-1"><strong>Email: </strong>{{ usergroup.email }}</p>
-      <p class="card-text mb-1 mt-1"><strong>Phone: </strong>{{ usergroup.phone }}</p>
+
+      <p class="card-text mb-1 mt-1"><strong>Description: </strong>{{ usergroup.description }}</p>
+      <p class="card-text mb-1 mt-1">
+        <strong>Members: </strong>
+        <ul>
+          {% for member in usergroup.members.all %}
+            <li>
+              {{ member.username }}
+            </li>
+          {% endfor %}
+        </ul>        
+      </p>
+      <p class="card-text mb-1 mt-1"><strong>Admin: </strong>{{ usergroup.admin }}</p>
+      <p class="card-text mb-1 mt-1"><strong>Group visibility: </strong>{{ usergroup.visibility }}</p>
     </div>
 
     <div class="card-footer mb-0 mt-0">
       <div class="d-flex justify-content-between">
         <div class="align-items-center">
-          <a href="{% url 'update_record' pk=record.id %}" class="btn btn-secondary align-self-start mt-1">Update</a>
+          <a href="{% url 'update_group' pk=usergroup.id %}" class="btn btn-secondary align-self-start mt-1">Update</a>
         </div>
         
         <div class="text-end">
-          <p class="card-text mb-0"><small>Created {{ record.created_at }}</small></p>
-          <p class="card-text mt-0"><small>Modified {{ record.modified_last }}</small> </p>
+          <p class="card-text mb-0"><small>Created {{ usergroup.creation_date }}</small></p>
+          <p class="card-text mt-0"><small>Modified {{ usergroup.modified_date }}</small> </p>
         </div>
       </div>
     </div>
